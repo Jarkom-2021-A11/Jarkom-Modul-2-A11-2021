@@ -3,8 +3,8 @@
 ## Anggota
 
 1. Frederick William Edlim 05111940000016
-2. Allam Taju Sarof 05111940000053
-3. Tom
+2. Thomas Dwi Awaka 05111940000021
+3. Allam Taju Sarof 05111940000053
 
 ## 1. Membuat nodes yang dapat mengakses internet
 
@@ -117,7 +117,7 @@
 - Lalu lakukan ping menuju `franky.a11.com`
   ![gambar ping_franky.a11.com](images/nomor%202%20gambar%201.jpg)
 
-# 3. Buat subdomain `super.franky.a11.com` dengan alias `www.super.franky.a11.com`
+## 3. Buat subdomain `super.franky.a11.com` dengan alias `www.super.franky.a11.com`
 
 - Ubah file `franky.a11.com` sehingga berisi sebagai berikut
   ```
@@ -139,7 +139,7 @@
 - Lalu lakukan ping menuju `super.franky.a11.com`
   ![gambar ping_super.franky.a11.com](images/nomor%203%20gambar%201.jpg)
 
-# 4. Buat reverse domain untuk domain utama
+## 4. Buat reverse domain untuk domain utama
 
 - Ubah file `named.conf.local` sehingga berisi sebagai berikut
 
@@ -175,7 +175,7 @@
 - Lalu lakukan test dengan perintah `host -t PTR 192.174.2.4`
   ![gambar_test_reverse_dns](images/nomor%204%20gambar%201.jpg)
 
-# 5. Buat Water7 sebagai DNS Slave
+## 5. Buat Water7 sebagai DNS Slave
 
 - Membuat sebuah file `restart-dns.sh` pada EniesLobby yang berisi berikut :
 
@@ -289,7 +289,7 @@
 - Lalu test dengan lakukan ping mecha.franky.a11.com
   ![gambar_test_mecha.franky.a11.com](images/nomor%206%20gambar%201.jpg)
 
-# 7. Buat subdomain general.mecha.franky.a11.com
+## 7. Buat subdomain general.mecha.franky.a11.com
 
 - Ubah file `mecha.franky.a11.com` sehingga isi sebagai berikut
   ```
@@ -311,12 +311,195 @@
 - Lalu test dengan lakukan ping general.mecha.franky.a11.com
   ![gambar_test_general.mecha.franky.a11.com](images/nomor%207%20gambar%201.jpg)
 
-=======
-7
-12
-=======
+## 8. Buat webserver www.franky.a11.com dengan DocumentRoot berada di /var/www/franky.a11.com
+* Pada Skypie buat file `restart-apache.sh` yang isinya sebagai berikut : 
+  ```
+  cp -a  ~/apache-config/. /etc/apache2/sites-available/
+  cp ~/ports.conf /etc/apache2/
 
-# 13. Virtual host untuk dapat mengakses file asset www.super.franky.a11.com/public/js menjadi www.super.franky.a11.com/js
+  a2enmod rewrite
+
+  cp ~/apache-default/.htaccess /var/www/html
+
+  a2ensite franky.a11.com
+  a2ensite super.franky.a11.com
+  a2ensite general.mecha.franky.a11.com
+
+  rm -rf /var/www/franky.a11.com
+  mkdir /var/www/franky.a11.com
+  cp -a ~/Praktikum-Modul-2-Jarkom/franky/. /var/www/franky.a11.com
+
+  rm -rf /var/www/super.franky.a11.com
+  mkdir /var/www/super.franky.a11.com
+  cp -a ~/Praktikum-Modul-2-Jarkom/super.franky/. /var/www/super.franky.a11.com
+
+  rm -rf /var/www/general.mecha.franky.a11
+  mkdir /var/www/general.mecha.franky.a11
+  cp -a ~/Praktikum-Modul-2-Jarkom/general.mecha.franky/. /var/www/general.mecha.franky.a11
+
+  service apache2 restart
+  ```
+* Lalu buat file config di folder apache-config dengan nama `franky.a11.com.conf`
+  ```
+  <VirtualHost *:80>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/franky.a11.com
+        ServerName franky.a11.com
+        ServerAlias www.franky.a11.com
+
+        <Directory /var/www/franky.a11.com/> 
+                Options +Indexes
+                AllowOverride All
+        </Directory>
+        
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+  </VirtualHost>
+
+  # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+  ```
+* Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
+* Test dengan melakukan `lynx www.franky.a11.com`
+  ![gambar_test_webserver_franky](images/nomor%208%20gambar%201.jpg)
+
+## 9. Mengganti url www.franky.a11.com/index.php/home menjadi www.franky.a11.com/home
+
+* Pada folder ~/Praktikum-Modul-2-Jarkom/franky buat sebuah file `.htaccess` dengan isi sebagai berikut
+  ```
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([^\.]+)$ $1index.php [NC,L]
+  ```
+* Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
+* Test dengan melakukan `lynx www.franky.a11.com/index.php/home`
+  ![gambar_test_webserver_franky](images/nomor%209%20gambar%201.jpg)
+
+## 10. subdomain www.super.franky.a11.com, buat penyimpanan aset yang memiliki DocumentRoot pada /var/www/super.franky.a11.com
+* Lalu buat file config di folder apache-config dengan nama `super.franky.a11.com.conf`
+  ```
+  <VirtualHost *:80>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/super.franky.a11.com
+        ServerName super.franky.a11.com
+        ServerAlias www.super.franky.a11.com
+
+        <Directory /var/www/super.franky.a11.com/>
+            AllowOverride All
+        </Directory>
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+  </VirtualHost>
+
+  # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+  ```
+* Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
+* Test dengan melakukan `lynx www.super.franky.a11.com`
+  ![gambar_test_webserver_super.franky](images/nomor%2010%20gambar%201.jpg)
+
+## 11. Buat folder public menjadi directory listing saja
+* Ubah config di folder apache-config dengan nama `super.franky.a11.com.conf` sehingga menjadi seperti ini
+  ```
+  <VirtualHost *:80>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/super.franky.a11.com
+        ServerName super.franky.a11.com
+        ServerAlias www.super.franky.a11.com
+
+        <Directory /var/www/super.franky.a11.com/public>
+            Options +Indexes
+        </Directory>
+
+        <Directory /var/www/super.franky.a11.com/>
+            AllowOverride All
+        </Directory>
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+  </VirtualHost>
+
+  # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+  ```
+* Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
+* Test dengan melakukan `lynx www.super.franky.a11.com/public`
+  ![gambar_test_webserver_super.franky](images/nomor%2011%20gambar%201.jpg)
+
+## 12. Error file 404 khusus
+* Buat file `.htacces` pada folder ~/Praktikum-Modul-2-Jarkom/super.franky dengan isi sebagai berikut 
+  ```
+  ErrorDocument 404 /error/404.html
+  ```
+* Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
+* Test dengan melakukan `lynx www.super.franky.a11.com/jsss`
+  ![gambar_test_webserver_super.franky](images/nomor%2012%20gambar%201.jpg)
+
+## 13. Virtual host untuk dapat mengakses file asset www.super.franky.a11.com/public/js menjadi www.super.franky.a11.com/js
 
 - Ubah config di folder apache-config dengan nama `super.franky.a11.com.conf` sehingga menjadi seperti ini
 
@@ -373,7 +556,7 @@
 - Test dengan melakukan `lynx www.super.franky.a11.com/js`
   ![gambar_test_webserver_super.franky](images/nomor%2013%20gambar%201.jpg)
 
-# 14. Web general.mecha.franky.a11.com hanya bisa diakses melalui port 15000 dan 15500
+## 14. Web general.mecha.franky.a11.com hanya bisa diakses melalui port 15000 dan 15500
 
 - Buat file `ports.conf` dengan isi :
 
@@ -443,7 +626,7 @@
 - Test dengan melakukan `lynx www.general.mecha.franky.a11.com:15000`
   ![gambar_test_webserver_general.mecha.franky](images/nomor%2014%20gambar%202.jpg)
 
-# 15. Web general.mecha.franky.a11.com memiliki autentikasi dengan username luffy dan password onepiece
+## 15. Web general.mecha.franky.a11.com memiliki autentikasi dengan username luffy dan password onepiece
 
 - ubah file `general.mecha.franky.a11.com.conf` menjadi
 
@@ -501,7 +684,7 @@
   ![gambar_test_webserver_general.mecha.franky](images/nomor%2014%20gambar%201.jpg)
   ![gambar_test_webserver_general.mecha.franky](images/nomor%2014%20gambar%202.jpg)
 
-# 16. Setiap kali mengakses IP dari Skypie akan di redirect menuju www.franky.a11.com
+## 16. Setiap kali mengakses IP dari Skypie akan di redirect menuju www.franky.a11.com
 
 - Buat file `000-default.conf` di folder apache-config yang nantinya akan digunakan untuk mereplace faile default yang ada
 
@@ -554,7 +737,7 @@
 - Test dengan melakukan `lynx 192.174.2.4`
   ![gambar_test_webserver_ip_skypie](images/nomor%2016%20gambar%201.jpg)
 
-# 17. Redirect semua gambar yang ada di super.franky.a11.com yang memiliki kata kata franky menuju franky.png
+## 17. Redirect semua gambar yang ada di super.franky.a11.com yang memiliki kata kata franky menuju franky.png
 
 - Pada folder ~/Praktikum-Modul-2-Jarkom/super.franky/public/images buat sebuah file `.htaccess` dengan isi sebagai berikut
   ```
@@ -566,3 +749,6 @@
 - Lalu jalankan file `restart-apache.sh` dengan perintah `bash restart-apache.sh`
 - Test dengan melakukan `lynx www.super.franky.a11.com/public/images/eyeoffranky.jpg`, maka akan diredirect untuk mendownload gambar franky.png
   ![gambar_test_webserver_ip_skypie](images/nomor%2017%20gambar%201.jpg)
+  
+# Kendala
+  Saat pengerjaan, terdapat kendala koneksi terganggu saat melakukan `apt install` sehingga harus menyediakan kuota tambahan untuk tethering demi kelancaran saat mengerjakan
