@@ -311,6 +311,11 @@
 - Lalu test dengan lakukan ping general.mecha.franky.a11.com
   ![gambar_test_general.mecha.franky.a11.com](images/nomor%207%20gambar%201.jpg)
 
+=======
+7
+12
+=======
+
 # 13. Virtual host untuk dapat mengakses file asset www.super.franky.a11.com/public/js menjadi www.super.franky.a11.com/js
 
 - Ubah config di folder apache-config dengan nama `super.franky.a11.com.conf` sehingga menjadi seperti ini
